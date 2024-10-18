@@ -13,3 +13,7 @@
 
 ;; Fungible Token
 (define-fungible-token data-token u1000000000)
+
+;; Private Functions
+(define-private (is-contract-owner)
+  (is-eq tx-sender contract-owner))
