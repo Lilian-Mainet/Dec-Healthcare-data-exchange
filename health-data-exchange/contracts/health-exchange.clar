@@ -24,3 +24,11 @@
 ;; Store patient data
 (define-public (store-data (data-hash (buff 32)))
   (ok (map-set patient-data { patient: tx-sender } { data-hash: data-hash, is-shared: false })))
+
+;; Grant access to a healthcare provider
+(define-public (grant-access (provider principal))
+  (ok (map-set access-permissions { patient: tx-sender, provider: provider } { can-access: true })))
+
+;; Revoke access from a healthcare provider
+(define-public (revoke-access (provider principal))
+  (ok (map-set access-permissions { patient: tx-sender, provider: provider } { can-access: false })))
