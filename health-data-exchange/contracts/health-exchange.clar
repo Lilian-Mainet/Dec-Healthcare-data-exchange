@@ -1,15 +1,15 @@
+;; Healthcare Data Exchange Platform Smart Contract
 
-;; health-exchange
-;; <add a description here>
+;; Constants
+(define-constant contract-owner tx-sender)
+(define-constant err-owner-only (err u100))
+(define-constant err-not-found (err u101))
+(define-constant err-unauthorized (err u102))
 
-;; constants
-;;
+;; Data Variables
+(define-map patient-data { patient: principal } { data-hash: (buff 32), is-shared: bool })
+(define-map access-permissions { patient: principal, provider: principal } { can-access: bool })
+(define-map research-contributions { patient: principal, researcher: principal } { contribution-count: uint })
 
-;; data maps and vars
-;;
-
-;; private functions
-;;
-
-;; public functions
-;;
+;; Fungible Token
+(define-fungible-token data-token u1000000000)
