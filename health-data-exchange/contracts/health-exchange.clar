@@ -17,3 +17,10 @@
 ;; Private Functions
 (define-private (is-contract-owner)
   (is-eq tx-sender contract-owner))
+
+
+;; Public Functions
+
+;; Store patient data
+(define-public (store-data (data-hash (buff 32)))
+  (ok (map-set patient-data { patient: tx-sender } { data-hash: data-hash, is-shared: false })))
