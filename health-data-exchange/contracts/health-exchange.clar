@@ -32,3 +32,7 @@
 ;; Revoke access from a healthcare provider
 (define-public (revoke-access (provider principal))
   (ok (map-set access-permissions { patient: tx-sender, provider: provider } { can-access: false })))
+
+;; Check if a provider has access to a patient's data
+(define-read-only (check-access (patient principal) (provider principal))
+  (default-to false (get can-access (map-get? access-permissions { patient: patient, provider: provider }))))
