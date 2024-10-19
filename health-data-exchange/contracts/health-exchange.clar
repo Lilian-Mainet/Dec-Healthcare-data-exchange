@@ -42,3 +42,10 @@
   (begin
     (map-set patient-data { patient: tx-sender } { data-hash: (get data-hash (unwrap-panic (map-get? patient-data { patient: tx-sender }))), is-shared: true })
     (ok true)))
+
+;; Get patient data hash
+(define-read-only (get-patient-data (patient principal))
+  (match (map-get? patient-data { patient: patient })
+    data-info (ok (get data-hash data-info))
+    (err err-not-found)))
+
