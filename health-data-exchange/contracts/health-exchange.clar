@@ -36,3 +36,9 @@
 ;; Check if a provider has access to a patient's data
 (define-read-only (check-access (patient principal) (provider principal))
   (default-to false (get can-access (map-get? access-permissions { patient: patient, provider: provider }))))
+
+;; Share data with researchers
+(define-public (share-with-researchers)
+  (begin
+    (map-set patient-data { patient: tx-sender } { data-hash: (get data-hash (unwrap-panic (map-get? patient-data { patient: tx-sender }))), is-shared: true })
+    (ok true)))
