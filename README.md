@@ -52,7 +52,7 @@ To set up the Decentralized Health Data Exchange platform, follow these steps:
 1. Install the Clarity SDK and development environment
 2. Clone this repository:
    ```
-   git clone https://github.com/your-username/decentralized-health-data-exchange.git
+   git clone https://github.com/Lilian-Mainet/decentralized-health-data-exchange.git
    ```
 3. Navigate to the project directory:
    ```
