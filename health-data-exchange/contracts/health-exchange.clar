@@ -69,4 +69,25 @@
         consent-timestamp: block-height 
       }))))
 
+;; Record research contribution
+(define-public (record-research-contribution (researcher principal))
+  (let ((current-contribution (default-to { contribution-count: u0, last-contribution-timestamp: u0 } 
+                                (map-get? research-contributions { patient: tx-sender, researcher: researcher }))))
+    (begin
+      (map-set research-contributions 
+        { patient: tx-sender, researcher: researcher }
+        { 
+          contribution-count: (+ (get contribution-count current-contribution) u1),
+          last-contribution-timestamp: block-height 
+        })
+      
+      ;; Mint additional tokens for repeat contributions
+      (if (> (get contribution-count current-contribution) u0)
+          (try! (mint-research-tokens u5))
+          (try! (mint-research-tokens u10)))
+      (ok true))))
+
+
+
+
 
