@@ -255,3 +255,49 @@
         (unwrap-panic (map-get? provider-credentials { provider: provider }))
         { verification-status: true }))
     (ok true)))
+
+;; Request Specific Data Access
+(define-public (request-data-access 
+  (patient principal)
+  (required-fields (list 10 (string-ascii 50)))
+  (access-purpose (string-ascii 100))
+)
+  (let ((consent-prefs (unwrap! 
+                         (map-get? patient-consent-preferences { patient: patient }) 
+                         (err err-not-found))))
+    (begin
+      ;; Check consent preferences
+      (asserts! 
+        (or 
+          (and (get allow-anonymous-research consent-prefs) (< (len required-fields) u3))
+          (get allow-identifiable-research consent-prefs)
+        ) 
+        (err err-unauthorized))
+      
+      ;; TODO: Implement actual access granting logic
+      (ok true))))
+
+;; Read-only Functions for Querying
+
+;; Get Research Proposal Details
+(define-read-only (get-research-proposal (researcher principal) (proposal-id uint))
+  (map-get? research-proposals { researcher: researcher, proposal-id: proposal-id }))
+
+;; Get Provider Verification Status
+(define-read-only (check-provider-credentials (provider principal))
+  (match (map-get? provider-credentials { provider: provider })
+    credentials (ok (get verification-status credentials))
+    (err err-not-found)))
+
+;; Owner Functions
+
+;; Set Global Research Parameters (Owner Only)
+(define-public (set-global-research-params
+  (max-anonymous-fields uint)
+  (min-funding-threshold uint)
+)
+  (begin
+    (asserts! (is-contract-owner) err-owner-only)
+    ;; Placeholder for setting global research parameters
+    (ok true)))
+
