@@ -229,3 +229,29 @@
         notify-on-access: notify-on-access
       })
     (ok true)))
+
+;; Register Provider Credentials
+(define-public (register-provider-credentials
+  (institution (string-ascii 100))
+  (credential-hash (buff 32))
+)
+  (begin
+    (map-set provider-credentials
+      { provider: tx-sender }
+      {
+        institution: institution,
+        credential-hash: credential-hash,
+        verification-status: false
+      })
+    (ok true)))
+
+;; Verify Provider Credentials (Owner Only)
+(define-public (verify-provider-credentials (provider principal))
+  (begin
+    (asserts! (is-contract-owner) err-owner-only)
+    (map-set provider-credentials
+      { provider: provider }
+      (merge 
+        (unwrap-panic (map-get? provider-credentials { provider: provider }))
+        { verification-status: true }))
+    (ok true)))
