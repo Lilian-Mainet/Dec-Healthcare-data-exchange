@@ -87,7 +87,11 @@
           (try! (mint-research-tokens u10)))
       (ok true))))
 
-
+;; Owner-only function to withdraw tokens
+(define-public (withdraw-tokens (amount uint))
+  (begin
+    (asserts! (is-contract-owner) err-owner-only)
+    (ft-transfer? data-token amount contract-owner tx-sender)))
 
 
 
