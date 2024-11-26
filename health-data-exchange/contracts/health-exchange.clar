@@ -7,11 +7,57 @@
 (define-constant err-unauthorized (err u102))
 (define-constant err-insufficient-tokens (err u103))
 (define-constant err-already-contributed (err u104))
+(define-constant err-data-exists (err u105))
+(define-constant err-invalid-request (err u106))
 
 ;; Data Variables
-(define-map patient-data { patient: principal } { data-hash: (buff 32), is-shared: bool, consent-timestamp: uint  })
+(define-map patient-data { patient: principal } 
+  { data-hash: (buff 32), 
+  is-shared: bool, 
+  consent-timestamp: uint,
+  data-type: (string-ascii 50),
+  sensitivity-level: uint  
+  })
+
+
 (define-map access-permissions { patient: principal, provider: principal } { can-access: bool, access-timestamp: uint  })
 (define-map research-contributions { patient: principal, researcher: principal } { contribution-count: uint, last-contribution-timestamp: uint })
+
+(define-map access-logs { 
+  patient: principal, 
+  provider: principal, 
+  access-timestamp: uint 
+} { 
+  accessed-fields: (list 10 (string-ascii 50)),
+  access-purpose: (string-ascii 100)
+})
+
+(define-map research-proposals {
+  researcher: principal,
+  proposal-id: uint
+} {
+  research-title: (string-ascii 100),
+  description: (string-ascii 500),
+  required-fields: (list 10 (string-ascii 50)),
+  approved: bool,
+  funding-requested: uint
+})
+
+(define-map patient-consent-preferences { 
+  patient: principal 
+} { 
+  allow-anonymous-research: bool,
+  allow-identifiable-research: bool,
+  notify-on-access: bool
+})
+
+(define-map provider-credentials {
+  provider: principal
+} {
+  institution: (string-ascii 100),
+  credential-hash: (buff 32),
+  verification-status: bool
+})
 
 ;; Fungible Token
 (define-fungible-token data-token u1000000000)
@@ -26,8 +72,27 @@
 ;; Public Functions
 
 ;; Store patient data
-(define-public (store-data (data-hash (buff 32)))
-  (ok (map-set patient-data { patient: tx-sender } { data-hash: data-hash, is-shared: false,  consent-timestamp: block-height  })))
+;; Advanced Data Storage with Metadata
+(define-public (store-advanced-data 
+  (data-hash (buff 32))
+  (data-type (string-ascii 50))
+  (sensitivity-level uint)
+)
+  (begin
+    ;; Check if data already exists
+    (asserts! (is-none (map-get? patient-data { patient: tx-sender })) (err err-data-exists))
+    
+    ;; Store data with additional metadata
+    (ok (map-set patient-data 
+      { patient: tx-sender } 
+      { 
+        data-hash: data-hash, 
+        is-shared: false, 
+        consent-timestamp: block-height,
+        data-type: data-type,
+        sensitivity-level: sensitivity-level
+      }))))
+
 
 ;; Grant access to a healthcare provider
 (define-public (grant-access (provider principal))
@@ -49,7 +114,9 @@
         patient: tx-sender } 
         { data-hash: (get data-hash (unwrap-panic (map-get? patient-data { patient: tx-sender }))),
         is-shared: true,
-          consent-timestamp: (get consent-timestamp current-data)  })
+          consent-timestamp: (get consent-timestamp current-data),
+          data-type: (get data-type current-data),
+          sensitivity-level: (get sensitivity-level current-data)})
       (ok true))))
 
 ;; Get patient data hash
@@ -66,7 +133,9 @@
       { 
         data-hash: new-data-hash, 
         is-shared: (get is-shared current-data), 
-        consent-timestamp: block-height 
+        consent-timestamp: block-height,
+        data-type: (get data-type current-data),
+        sensitivity-level: (get sensitivity-level current-data) 
       }))))
 
 ;; Record research contribution
