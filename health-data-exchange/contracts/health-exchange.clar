@@ -163,4 +163,33 @@
     (ft-transfer? data-token amount contract-owner tx-sender)))
 
 
+;; Submit Research Proposal
+(define-public (submit-research-proposal
+  (proposal-id uint)
+  (research-title (string-ascii 100))
+  (description (string-ascii 500))
+  (required-fields (list 10 (string-ascii 50)))
+  (funding-requested uint)
+)
+  (begin
+    (map-set research-proposals 
+      { researcher: tx-sender, proposal-id: proposal-id }
+      {
+        research-title: research-title,
+        description: description,
+        required-fields: required-fields,
+        approved: false,
+        funding-requested: funding-requested
+      })
+    (ok true)))
 
+;; Approve Research Proposal (Owner Only)
+(define-public (approve-research-proposal (researcher principal) (proposal-id uint))
+  (begin
+    (asserts! (is-contract-owner) err-owner-only)
+    (map-set research-proposals 
+      { researcher: researcher, proposal-id: proposal-id }
+      (merge 
+        (unwrap-panic (map-get? research-proposals { researcher: researcher, proposal-id: proposal-id }))
+        { approved: true }))
+    (ok true)))
