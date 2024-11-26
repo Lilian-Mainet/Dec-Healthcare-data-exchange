@@ -213,3 +213,19 @@
         access-purpose: access-purpose
       })
     (ok true)))
+
+;; Set Patient Consent Preferences
+(define-public (set-consent-preferences
+  (allow-anonymous-research bool)
+  (allow-identifiable-research bool)
+  (notify-on-access bool)
+)
+  (begin
+    (map-set patient-consent-preferences 
+      { patient: tx-sender }
+      {
+        allow-anonymous-research: allow-anonymous-research,
+        allow-identifiable-research: allow-identifiable-research,
+        notify-on-access: notify-on-access
+      })
+    (ok true)))
