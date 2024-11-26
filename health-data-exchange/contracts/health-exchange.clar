@@ -193,3 +193,23 @@
         (unwrap-panic (map-get? research-proposals { researcher: researcher, proposal-id: proposal-id }))
         { approved: true }))
     (ok true)))
+
+;; Log Detailed Access
+(define-public (log-data-access 
+  (patient principal)
+  (provider principal)
+  (accessed-fields (list 10 (string-ascii 50)))
+  (access-purpose (string-ascii 100))
+)
+  (begin
+    (map-set access-logs 
+      { 
+        patient: patient, 
+        provider: provider, 
+        access-timestamp: block-height 
+      }
+      {
+        accessed-fields: accessed-fields,
+        access-purpose: access-purpose
+      })
+    (ok true)))
